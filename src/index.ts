@@ -79,3 +79,43 @@ export type MinorOf<S extends string> =
 
 export type PatchOf<S extends string> =
             ParseCore<S> extends { patch: infer P extends string } ? P : never
+
+export type AllAlphaNumDash<S extends string> =
+              S extends `${infer C}${infer R}` ? (IsAlphaNumDash<C> extends true ? AllAlphaNumDash<R> : false) : true
+
+export type IsAlphaNumDashToken<S extends string> =
+              IsNonEmpty<S> extends true ? (AllAlphaNumDash<S> extends true ? true : false) : false
+
+type PreNum<V extends string = string> = { kind: 'num'; v: V }
+type PreStr<V extends string = string> = { kind: 'str'; v: V }
+export type PreId<V extends string = string> = PreNum<V> | PreStr<V>
+
+export type TokenizePreId<S extends string> =
+  IsNumericId<S> extends true ? PreNum<S> :
+    IsAlphaNumDashToken<S> extends true ? PreStr<S> :
+      never
+
+export type SplitDotsNonEmpty<S extends string> =
+              S extends '' ? never :
+                S extends `${infer H}.${infer T}` ? (
+                  H extends '' ? never :
+                    SplitDotsNonEmpty<T> extends infer R ? (R extends string[] ? [H, ...R] : never) : never
+                ) : (S extends '' ? never : [S])
+
+export type MapPreTokens<Ts extends string[], Acc extends PreId[] = []> =
+                  Ts extends [infer H extends string, ...infer R extends string[]]
+                    ? TokenizePreId<H> extends infer X
+                      ? [X] extends [never]
+                          ? never
+                          : X extends PreId
+                            ? MapPreTokens<R, [...Acc, X]>
+                            : never
+                      : never
+                    : Acc
+
+export type ParsePre<S extends string> =
+              SplitDotsNonEmpty<S> extends infer Ts
+                ? Ts extends string[] ? MapPreTokens<Ts> : never
+                : never
+
+export type IsValidPre<S extends string> = ParsePre<S> extends never ? false : true
