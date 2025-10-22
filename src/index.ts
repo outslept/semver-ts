@@ -37,3 +37,20 @@ export type CharRank<C extends string> =
       C extends Upper ? [2, IndexIn<UppersArr, C>] :
         C extends Lower ? [3, IndexIn<LowersArr, C>] :
           never
+
+export type IsDigits<S extends string> =
+  S extends `${infer C}${infer R}` ? (IsDigit<C> extends true ? IsDigits<R> : false) : true
+
+export type IsNonEmpty<S extends string> =
+    S extends '' ? false : true
+
+export type StartsWithZero<S extends string> =
+    S extends `0${string}` ? true : false
+
+export type NoLeadingZero<S extends string> =
+    S extends '0' ? true : (StartsWithZero<S> extends true ? false : true)
+
+export type IsNumericId<S extends string> =
+    IsNonEmpty<S> extends true
+      ? (IsDigits<S> extends true ? NoLeadingZero<S> : false)
+      : false
