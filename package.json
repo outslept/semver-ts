@@ -1,0 +1,7 @@
+{
+	"devDependencies": {
+		"eslint": "^9.38.0",
+		"neostandard": "^0.12.2",
+		"typescript": "^5.9.3"
+	}
+}
