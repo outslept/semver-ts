@@ -1,8 +1,28 @@
 import type { ParseSemver, PreId } from '../parser'
-import type { CmpSemver } from '../comparator'
+import type { CmpSemver, CmpNumStr } from '../comparator'
 import type { DiffCore } from './core'
-import type { EqPreArr, EqStrArr } from './eq'
-import type { NumEq } from './num'
+import type { Eq } from '../utils/eq'
+
+type EqStr<A extends string, B extends string> = Eq<A, B>
+
+type EqStrArr<A extends string[], B extends string[]> =
+  A extends [infer HA extends string, ...infer TA extends string[]]
+    ? (B extends [infer HB extends string, ...infer TB extends string[]]
+        ? (EqStr<HA, HB> extends true ? EqStrArr<TA, TB> : false)
+        : false)
+    : (B extends [] ? true : false)
+
+type EqPreId<A extends PreId, B extends PreId> =
+  Eq<A['kind'], B['kind']> extends true ? EqStr<A['v'], B['v']> : false
+
+type EqPreArr<A extends PreId[], B extends PreId[]> =
+  A extends [infer HA extends PreId, ...infer TA extends PreId[]]
+    ? (B extends [infer HB extends PreId, ...infer TB extends PreId[]]
+        ? (EqPreId<HA, HB> extends true ? EqPreArr<TA, TB> : false)
+        : false)
+    : (B extends [] ? true : false)
+
+type NumEq<A extends string, B extends string> = CmpNumStr<A, B> extends 0 ? true : false
 
 export type SemverDiff<A extends string, B extends string> =
   ParseSemver<A> extends {

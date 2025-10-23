@@ -1,9 +1,36 @@
 import type { PreId } from '../parser'
-import type { IncNumStr } from '../increment'
-import type { And } from './bool'
-import type { EqStr, EqStrArr } from './eq'
-import type { IsZero, NumEq } from './num'
-import type { PreEmpty, PreNonEmpty } from './pre'
+import type { Digit } from '../char'
+import type { CmpNumStr } from '../comparator'
+import type { And, Not } from '../utils/bool'
+import type { Eq } from '../utils/eq'
+
+export type EqStr<A extends string, B extends string> = Eq<A, B>
+
+export type EqStrArr<A extends string[], B extends string[]> =
+  A extends [infer HA extends string, ...infer TA extends string[]]
+    ? (B extends [infer HB extends string, ...infer TB extends string[]]
+        ? (EqStr<HA, HB> extends true ? EqStrArr<TA, TB> : false)
+        : false)
+    : (B extends [] ? true : false)
+
+export type IsZero<S extends string> = EqStr<S, '0'>
+
+export type NumEq<A extends string, B extends string> = CmpNumStr<A, B> extends 0 ? true : false
+
+export type PreEmpty<P extends PreId[]> = P extends [] ? true : false
+
+export type PreNonEmpty<P extends PreId[]> = Not<PreEmpty<P>>
+
+export type IncNumStrCarry<S extends string> =
+  S extends '' ? '1' :
+    S extends `${infer R}${infer D extends Digit}`
+      ? (D extends '9' ? `${IncNumStrCarry<R>}0` : `${R}${D extends '0' ? '1' : D extends '1' ? '2' : D extends '2' ? '3' : D extends '3' ? '4' : D extends '4' ? '5' : D extends '5' ? '6' : D extends '6' ? '7' : D extends '7' ? '8' : D extends '8' ? '9' : '0'}`)
+      : never
+
+export type IncNumStr<S extends string> =
+  S extends `${infer R}${infer D extends Digit}`
+    ? (D extends '9' ? `${IncNumStrCarry<R>}0` : `${R}${D extends '0' ? '1' : D extends '1' ? '2' : D extends '2' ? '3' : D extends '3' ? '4' : D extends '4' ? '5' : D extends '5' ? '6' : D extends '6' ? '7' : D extends '7' ? '8' : D extends '8' ? '9' : '0'}`)
+    : never
 
 export type DiffKind =
   | 'major'

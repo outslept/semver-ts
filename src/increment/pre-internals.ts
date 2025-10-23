@@ -1,5 +1,5 @@
 import type { PreId } from '../parser'
-import type { Eq } from './eq'
+import type { Eq } from '../utils/eq'
 import type { IncNumStr } from './num'
 
 export type PopLast<A extends any[]> = A extends [...infer I, infer L] ? [I, L] : [[], never]
