@@ -27,11 +27,11 @@ type SetMentionsCore<S extends NormSet, K extends string> =
 
 type CmpToBool<C extends -1 | 0 | 1, OP extends '=' | '>' | '>=' | '<' | '<='> =
   OP extends '=' ? (C extends 0 ? true : false) :
-  OP extends '>' ? (C extends 1 ? true : false) :
-  OP extends '>=' ? (C extends -1 ? false : true) :
-  OP extends '<' ? (C extends -1 ? true : false) :
-  OP extends '<=' ? (C extends 1 ? false : true) :
-  false
+    OP extends '>' ? (C extends 1 ? true : false) :
+      OP extends '>=' ? (C extends -1 ? false : true) :
+        OP extends '<' ? (C extends -1 ? true : false) :
+          OP extends '<=' ? (C extends 1 ? false : true) :
+            false
 
 type SatisfiesCmp<V extends string, C extends NormCmp> =
   CmpSemver<V, C['v']> extends infer R extends -1 | 0 | 1
@@ -73,14 +73,14 @@ type MaxLB<A extends LB, B extends LB> =
 
 type MinUB<A extends UB | UBNone, B extends UB | UBNone> =
   [A] extends [UBNone] ? B :
-  [B] extends [UBNone] ? A :
-  A extends UB
-    ? (B extends UB
-        ? (CmpSemver<A['v'], B['v']> extends infer C extends -1 | 0 | 1
-            ? (C extends -1 ? A : (C extends 1 ? B : { kind: 'ub'; v: A['v']; strict: A['strict'] extends true ? true : B['strict'] extends true ? true : false }))
-            : never)
-        : never)
-    : never
+      [B] extends [UBNone] ? A :
+        A extends UB
+          ? (B extends UB
+              ? (CmpSemver<A['v'], B['v']> extends infer C extends -1 | 0 | 1
+                  ? (C extends -1 ? A : (C extends 1 ? B : { kind: 'ub'; v: A['v']; strict: A['strict'] extends true ? true : B['strict'] extends true ? true : false }))
+                  : never)
+              : never)
+          : never
 
 type FoldBounds<S extends NormSet, L extends LB = { kind: 'lb'; v: '0.0.0'; strict: false }, U extends UB | UBNone = UBNone, EqV extends string | null = null> =
   S extends [infer H extends NormCmp, ...infer T extends NormCmp[]]
@@ -101,11 +101,11 @@ type IntervalsIntersect<B1 extends { lb: LB; ub: UB | UBNone }, B2 extends { lb:
   MaxLB<B1['lb'], B2['lb']> extends infer LBX extends LB
     ? MinUB<B1['ub'], B2['ub']> extends infer UBY extends UB | UBNone
       ? ([UBY] extends [UBNone] ? true :
-          (UBY extends UB
-            ? (CmpSemver<LBX['v'], UBY['v']> extends infer C extends -1 | 0 | 1
-                ? (C extends -1 ? true : (C extends 1 ? false : (LBX['strict'] extends true ? false : (UBY['strict'] extends true ? false : true))))
-                : never)
-            : never))
+            (UBY extends UB
+              ? (CmpSemver<LBX['v'], UBY['v']> extends infer C extends -1 | 0 | 1
+                  ? (C extends -1 ? true : (C extends 1 ? false : (LBX['strict'] extends true ? false : (UBY['strict'] extends true ? false : true))))
+                  : never)
+              : never))
       : never
     : never
 

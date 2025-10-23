@@ -67,11 +67,11 @@ type ExpandLteWildcard<PS extends PartialSemver> =
 
 type ExpandComparatorNode<N extends ComparatorNode> =
   N['op'] extends '=' ? ExpandEqWildcard<N['v']> :
-  N['op'] extends '>=' ? ExpandGteWildcard<N['v']> :
-  N['op'] extends '>' ? ExpandGtWildcard<N['v']> :
-  N['op'] extends '<=' ? ExpandLteWildcard<N['v']> :
-  N['op'] extends '<' ? ExpandLtWildcard<N['v']> :
-  never
+    N['op'] extends '>=' ? ExpandGteWildcard<N['v']> :
+      N['op'] extends '>' ? ExpandGtWildcard<N['v']> :
+        N['op'] extends '<=' ? ExpandLteWildcard<N['v']> :
+          N['op'] extends '<' ? ExpandLtWildcard<N['v']> :
+            never
 
 type UpperForTilde<C extends PartialCore> =
   IsX<C['major']> extends true
@@ -132,10 +132,10 @@ type ExpandHyphenNode<N extends HyphenNode> =
 
 type ExpandNode<N extends RangeNode> =
   N extends { t: 'cmp' } ? ExpandComparatorNode<N> :
-  N extends { t: 'tilde' } ? ExpandTildeNode<N> :
-  N extends { t: 'caret' } ? ExpandCaretNode<N> :
-  N extends { t: 'hy' } ? ExpandHyphenNode<N> :
-  never
+    N extends { t: 'tilde' } ? ExpandTildeNode<N> :
+      N extends { t: 'caret' } ? ExpandCaretNode<N> :
+        N extends { t: 'hy' } ? ExpandHyphenNode<N> :
+          never
 
 type Concat<A extends any[], B extends any[]> = [...A, ...B]
 

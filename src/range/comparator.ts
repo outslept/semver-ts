@@ -2,7 +2,7 @@ import type { PreId } from '../parser'
 import type { ParsePre } from '../parser/pre'
 import type { ParseBuild } from '../parser/build'
 import type { IsNumericId } from '../string'
-import type { Wild, CmpOp, PartialCore, PartialSemver, ComparatorNode, TildeNode, CaretNode } from './ast'
+import type { Wild, CmpOp, PartialCore, PartialSemver } from './ast'
 
 type TrimLeft<S extends string> = S extends ` ${infer R}` ? TrimLeft<R> : S
 type TrimRight<S extends string> = S extends `${infer R} ` ? TrimRight<R> : S
@@ -73,10 +73,10 @@ type MakeCaret<S extends string> =
 
 export type ParseComparator<S extends string> =
   S extends `^${infer VS}` ? MakeCaret<VS> :
-  S extends `~${infer VS2}` ? MakeTilde<VS2> :
-  S extends `>=${infer V1}` ? MakeCmp<'>=', V1> :
-  S extends `<=${infer V2}` ? MakeCmp<'<=', V2> :
-  S extends `>${infer V3}` ? MakeCmp<'>', V3> :
-  S extends `<${infer V4}` ? MakeCmp<'<', V4> :
-  S extends `=${infer V5}` ? MakeCmp<'=', V5> :
-  MakeCmp<'=', S>
+    S extends `~${infer VS2}` ? MakeTilde<VS2> :
+      S extends `>=${infer V1}` ? MakeCmp<'>=', V1> :
+        S extends `<=${infer V2}` ? MakeCmp<'<=', V2> :
+          S extends `>${infer V3}` ? MakeCmp<'>', V3> :
+            S extends `<${infer V4}` ? MakeCmp<'<', V4> :
+              S extends `=${infer V5}` ? MakeCmp<'=', V5> :
+                MakeCmp<'=', S>

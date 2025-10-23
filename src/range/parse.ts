@@ -1,5 +1,5 @@
 import type { SplitBy } from '../utils/str'
-import type { RangeAST, ComparatorSet, RangeNode, PartialSemver } from './ast'
+import type { ComparatorSet, RangeNode, PartialSemver } from './ast'
 import type { ParsePartialSemver, ParseComparator } from './comparator'
 
 type TrimLeft<S extends string> = S extends ` ${infer R}` ? TrimLeft<R> : S
