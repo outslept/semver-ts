@@ -9,7 +9,7 @@ export type NormCmp = { op: NormOp; v: string }
 export type NormSet = NormCmp[]
 export type NormRange = NormSet[]
 
-type IsX<S> = S extends 'x' ? true : false
+type IsX<S extends string | 'x'> = S extends 'x' ? true : false
 type ToNum<S extends string | 'x'> = S extends 'x' ? '0' : S
 
 type GetMinor<C extends PartialCore> = C extends { minor: infer M extends string | 'x' } ? M : 'x'
@@ -131,10 +131,10 @@ type ExpandHyphenNode<N extends HyphenNode> =
         : never)
 
 type ExpandNode<N extends RangeNode> =
-  N extends { t: 'cmp' } ? ExpandComparatorNode<N> :
-    N extends { t: 'tilde' } ? ExpandTildeNode<N> :
-      N extends { t: 'caret' } ? ExpandCaretNode<N> :
-        N extends { t: 'hy' } ? ExpandHyphenNode<N> :
+  N extends ComparatorNode ? ExpandComparatorNode<N> :
+    N extends TildeNode ? ExpandTildeNode<N> :
+      N extends CaretNode ? ExpandCaretNode<N> :
+        N extends HyphenNode ? ExpandHyphenNode<N> :
           never
 
 type Concat<A extends any[], B extends any[]> = [...A, ...B]
