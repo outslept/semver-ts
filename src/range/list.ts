@@ -36,7 +36,7 @@ type UniqueAcc<Vs extends string[], Acc extends string[] = []> =
 
 export type Unique<Vs extends string[]> = UniqueAcc<Vs>
 
-type FilterSatisfying<Vs extends string[], R extends string, O> =
+type FilterSatisfying<Vs extends string[], R extends string, O extends { includePrerelease?: boolean } = {}> =
   Vs extends [infer H extends string, ...infer T extends string[]]
     ? (Satisfies<H, R, O> extends true ? [H, ...FilterSatisfying<T, R, O>] : FilterSatisfying<T, R, O>)
     : []
