@@ -53,9 +53,11 @@ type UpperNextForWildcard<C extends PartialCore> =
 
 type ExpandEqWildcard<PS extends PartialSemver> =
   HasWildcard<PS["core"]> extends true
-    ? UpperNextForWildcard<PS["core"]> extends infer U extends string
-      ? [{ op: ">="; v: PSLower<PS> }, { op: "<"; v: U }]
-      : [{ op: ">="; v: "0.0.0" }]
+    ? [UpperNextForWildcard<PS["core"]>] extends [never]
+      ? [{ op: ">="; v: "0.0.0" }]
+      : UpperNextForWildcard<PS["core"]> extends infer U extends string
+        ? [{ op: ">="; v: PSLower<PS> }, { op: "<"; v: U }]
+        : [{ op: ">="; v: "0.0.0" }]
     : [{ op: "="; v: PSLower<PS> }];
 
 type ExpandGteWildcard<PS extends PartialSemver> =
@@ -67,9 +69,11 @@ type ExpandGteWildcard<PS extends PartialSemver> =
 
 type ExpandGtWildcard<PS extends PartialSemver> =
   HasWildcard<PS["core"]> extends true
-    ? UpperNextForWildcard<PS["core"]> extends infer U extends string
-      ? [{ op: ">="; v: U }]
-      : []
+    ? [UpperNextForWildcard<PS["core"]>] extends [never]
+      ? []
+      : UpperNextForWildcard<PS["core"]> extends infer U extends string
+        ? [{ op: ">="; v: U }]
+        : []
     : [{ op: ">"; v: PSLower<PS> }];
 
 type ExpandLtWildcard<PS extends PartialSemver> =
@@ -81,9 +85,11 @@ type ExpandLtWildcard<PS extends PartialSemver> =
 
 type ExpandLteWildcard<PS extends PartialSemver> =
   HasWildcard<PS["core"]> extends true
-    ? UpperNextForWildcard<PS["core"]> extends infer U extends string
-      ? [{ op: "<"; v: U }]
-      : []
+    ? [UpperNextForWildcard<PS["core"]>] extends [never]
+      ? []
+      : UpperNextForWildcard<PS["core"]> extends infer U extends string
+        ? [{ op: "<"; v: U }]
+        : []
     : [{ op: "<="; v: PSLower<PS> }];
 
 type ExpandComparatorNode<N extends ComparatorNode> = N["op"] extends "="
@@ -105,12 +111,11 @@ type UpperForTilde<C extends PartialCore> =
       ? NextMajor<`${ToNum<C["major"]>}.0.0`>
       : NextMinor<`${ToNum<C["major"]>}.${ToNum<GetMinor<C>>}.0`>;
 
-type ExpandTildeNode<N extends TildeNode> =
-  UpperForTilde<N["v"]["core"]> extends infer U
-    ? U extends string
-      ? [{ op: ">="; v: PSLower<N["v"]> }, { op: "<"; v: U }]
-      : [{ op: ">="; v: "0.0.0" }]
-    : never;
+type ExpandTildeNode<N extends TildeNode> = [UpperForTilde<N["v"]["core"]>] extends [never]
+  ? [{ op: ">="; v: "0.0.0" }]
+  : UpperForTilde<N["v"]["core"]> extends infer U extends string
+    ? [{ op: ">="; v: PSLower<N["v"]> }, { op: "<"; v: U }]
+    : [{ op: ">="; v: "0.0.0" }];
 
 type IsZero<S extends string> = S extends "0" ? true : false;
 
@@ -135,12 +140,11 @@ type UpperForCaret<C extends PartialCore> =
         : NextMajor<`${MA}.0.0`>
       : never;
 
-type ExpandCaretNode<N extends CaretNode> =
-  UpperForCaret<N["v"]["core"]> extends infer U
-    ? U extends string
-      ? [{ op: ">="; v: PSLower<N["v"]> }, { op: "<"; v: U }]
-      : [{ op: ">="; v: "0.0.0" }]
-    : never;
+type ExpandCaretNode<N extends CaretNode> = [UpperForCaret<N["v"]["core"]>] extends [never]
+  ? [{ op: ">="; v: "0.0.0" }]
+  : UpperForCaret<N["v"]["core"]> extends infer U extends string
+    ? [{ op: ">="; v: PSLower<N["v"]> }, { op: "<"; v: U }]
+    : [{ op: ">="; v: "0.0.0" }];
 
 type RightIsFull<C extends PartialCore> =
   IsX<GetMinor<C>> extends true ? false : IsX<GetPatch<C>> extends true ? false : true;
@@ -148,11 +152,11 @@ type RightIsFull<C extends PartialCore> =
 type ExpandHyphenNode<N extends HyphenNode> =
   RightIsFull<N["right"]["core"]> extends true
     ? [{ op: ">="; v: PSLower<N["left"]> }, { op: "<="; v: PSLower<N["right"]> }]
-    : UpperNextForWildcard<N["right"]["core"]> extends infer U
-      ? U extends string
+    : [UpperNextForWildcard<N["right"]["core"]>] extends [never]
+      ? [{ op: ">="; v: "0.0.0" }]
+      : UpperNextForWildcard<N["right"]["core"]> extends infer U extends string
         ? [{ op: ">="; v: PSLower<N["left"]> }, { op: "<"; v: U }]
-        : [{ op: ">="; v: "0.0.0" }]
-      : never;
+        : [{ op: ">="; v: "0.0.0" }];
 
 type ExpandNode<N extends RangeNode> = N extends ComparatorNode
   ? ExpandComparatorNode<N>
