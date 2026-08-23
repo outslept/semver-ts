@@ -50,10 +50,12 @@ type MapTerms<Ts extends string[], Acc extends ComparatorSet[] = []> = Ts extend
   : Acc;
 
 export type ParseRange<R extends string> =
-  SplitBy<R, "||"> extends infer Parts
-    ? Parts extends string[]
-      ? MapTerms<
-          { [K in keyof Parts]: Parts[K] extends string ? Trim<Parts[K]> : never } & string[]
-        >
-      : never
-    : never;
+  Trim<R> extends ""
+    ? ParseRange<"*">
+    : SplitBy<R, "||"> extends infer Parts
+      ? Parts extends string[]
+        ? MapTerms<
+            { [K in keyof Parts]: Parts[K] extends string ? Trim<Parts[K]> : never } & string[]
+          >
+        : never
+      : never;
