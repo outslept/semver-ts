@@ -71,25 +71,34 @@ export type DiffCore<
     : "build"
   : CMP extends 1
     ? "downgrade"
-    : NumEq<A_MAJ, B_MAJ> extends false
-      ? And<
-          And<And<EqStr<IncNumStr<A_MAJ>, B_MAJ>, IsZero<B_MIN>>, IsZero<B_PAT>>,
-          And<PreEmpty<A_PRE>, PreNonEmpty<B_PRE>>
-        > extends true
-        ? "premajor"
-        : "major"
-      : NumEq<A_MIN, B_MIN> extends false
-        ? And<
-            And<EqStr<IncNumStr<A_MIN>, B_MIN>, IsZero<B_PAT>>,
-            And<PreEmpty<A_PRE>, PreNonEmpty<B_PRE>>
-          > extends true
-          ? "preminor"
-          : "minor"
-        : NumEq<A_PAT, B_PAT> extends false
-          ? And<
-              EqStr<IncNumStr<A_PAT>, B_PAT>,
-              And<PreEmpty<A_PRE>, PreNonEmpty<B_PRE>>
-            > extends true
-            ? "prepatch"
-            : "patch"
-          : "prerelease";
+    : (
+          And<PreNonEmpty<A_PRE>, PreEmpty<B_PRE>> extends true
+            ? IsZero<A_PAT> extends true
+              ? IsZero<A_MIN> extends true
+                ? "major"
+                : And<NumEq<A_MAJ, B_MAJ>, NumEq<A_MIN, B_MIN>> extends true
+                  ? "minor"
+                  : "fallthrough"
+              : And<And<NumEq<A_MAJ, B_MAJ>, NumEq<A_MIN, B_MIN>>, NumEq<A_PAT, B_PAT>> extends true
+                ? "patch"
+                : "fallthrough"
+            : "fallthrough"
+        ) extends infer PreToStable
+      ? PreToStable extends "fallthrough"
+        ? PreNonEmpty<B_PRE> extends true
+          ? NumEq<A_MAJ, B_MAJ> extends false
+            ? "premajor"
+            : NumEq<A_MIN, B_MIN> extends false
+              ? "preminor"
+              : NumEq<A_PAT, B_PAT> extends false
+                ? "prepatch"
+                : "prerelease"
+          : NumEq<A_MAJ, B_MAJ> extends false
+            ? "major"
+            : NumEq<A_MIN, B_MIN> extends false
+              ? "minor"
+              : NumEq<A_PAT, B_PAT> extends false
+                ? "patch"
+                : "prerelease"
+        : PreToStable
+      : never;
