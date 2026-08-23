@@ -70,16 +70,16 @@ type ExpandGteWildcard<PS extends PartialSemver> =
 type ExpandGtWildcard<PS extends PartialSemver> =
   HasWildcard<PS["core"]> extends true
     ? [UpperNextForWildcard<PS["core"]>] extends [never]
-      ? []
+      ? [{ op: "<"; v: "0.0.0-0" }]
       : UpperNextForWildcard<PS["core"]> extends infer U extends string
         ? [{ op: ">="; v: U }]
-        : []
+        : [{ op: "<"; v: "0.0.0-0" }]
     : [{ op: ">"; v: PSLower<PS> }];
 
 type ExpandLtWildcard<PS extends PartialSemver> =
   HasWildcard<PS["core"]> extends true
     ? IsX<PS["core"]["major"]> extends true
-      ? []
+      ? [{ op: "<"; v: "0.0.0-0" }]
       : [{ op: "<"; v: CoreLower<PS["core"]> }]
     : [{ op: "<"; v: PSLower<PS> }];
 
