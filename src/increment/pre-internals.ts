@@ -24,11 +24,13 @@ export type PreIdsToStr<Ps extends PreId[]> = Ps extends [
     : `${H["v"]}.${PreIdsToStr<T>}`
   : "";
 
-export type NextPreTokens<Ps extends PreId[], Tag extends string> =
+export type NextPreTokens<Ps extends PreId[], Tag extends string, Base extends 0 | 1 | false> =
   FirstIsTag<Ps, Tag> extends true
     ? PopLast<Ps> extends [infer Init extends PreId[], infer Last extends PreId]
       ? Last extends { kind: "num"; v: infer NV extends string }
         ? [...Init, { kind: "num"; v: IncNumStr<NV> }]
-        : [...Ps, { kind: "num"; v: "1" }]
-      : [{ kind: "str"; v: Tag }, { kind: "num"; v: "1" }]
-    : [{ kind: "str"; v: Tag }, { kind: "num"; v: "1" }];
+        : [...Ps, { kind: "num"; v: Base extends 1 ? "1" : "0" }]
+      : [{ kind: "str"; v: Tag }, { kind: "num"; v: Base extends 1 ? "1" : "0" }]
+    : Base extends false
+      ? [{ kind: "str"; v: Tag }]
+      : [{ kind: "str"; v: Tag }, { kind: "num"; v: Base extends 1 ? "1" : "0" }];

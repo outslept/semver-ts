@@ -22,6 +22,7 @@ import type {
 
 type OptKeep<O> = O extends { keepBuild: infer K extends boolean } ? K : false;
 type OptPreid<O> = O extends { preid: infer P extends string } ? P : "rc";
+type OptBase<O> = O extends { identifierBase: infer B extends 0 | 1 | false } ? B : 1;
 
 type Release<V extends string, Keep extends boolean> =
   ParseSemver<V> extends {
@@ -30,79 +31,79 @@ type Release<V extends string, Keep extends boolean> =
     patch: infer C extends string;
     build: infer BD extends string[];
   }
-    ? Keep extends true
-      ? BD extends []
-        ? `${A}.${B}.${C}`
-        : `${A}.${B}.${C}+${BuildToStr<BD>}`
-      : `${A}.${B}.${C}`
-    : never;
+  ? Keep extends true
+  ? BD extends []
+  ? `${A}.${B}.${C}`
+  : `${A}.${B}.${C}+${BuildToStr<BD>}`
+  : `${A}.${B}.${C}`
+  : never;
 
 type IncPrepatch<V extends string, O> =
   IsAlphaNumDashToken<OptPreid<O>> extends true
-    ? OptKeep<O> extends true
-      ? PrepatchKeepBuild<V, OptPreid<O>>
-      : Prepatch<V, OptPreid<O>>
-    : never;
+  ? OptKeep<O> extends true
+  ? PrepatchKeepBuild<V, OptPreid<O>, OptBase<O>>
+  : Prepatch<V, OptPreid<O>, OptBase<O>>
+  : never;
 
 type IncPreminor<V extends string, O> =
   IsAlphaNumDashToken<OptPreid<O>> extends true
-    ? OptKeep<O> extends true
-      ? PreminorKeepBuild<V, OptPreid<O>>
-      : Preminor<V, OptPreid<O>>
-    : never;
+  ? OptKeep<O> extends true
+  ? PreminorKeepBuild<V, OptPreid<O>, OptBase<O>>
+  : Preminor<V, OptPreid<O>, OptBase<O>>
+  : never;
 
 type IncPremajor<V extends string, O> =
   IsAlphaNumDashToken<OptPreid<O>> extends true
-    ? OptKeep<O> extends true
-      ? PremajorKeepBuild<V, OptPreid<O>>
-      : Premajor<V, OptPreid<O>>
-    : never;
+  ? OptKeep<O> extends true
+  ? PremajorKeepBuild<V, OptPreid<O>, OptBase<O>>
+  : Premajor<V, OptPreid<O>, OptBase<O>>
+  : never;
 
 type IncPrerelease<V extends string, O> =
   IsAlphaNumDashToken<OptPreid<O>> extends true
-    ? ParseSemver<V> extends { pre: infer P extends PreId[] }
-      ? P extends []
-        ? OptKeep<O> extends true
-          ? PrepatchKeepBuild<V, OptPreid<O>>
-          : Prepatch<V, OptPreid<O>>
-        : OptKeep<O> extends true
-          ? NextPreKeepBuild<V, OptPreid<O>>
-          : NextPreSafe<V, OptPreid<O>>
-      : never
-    : never;
+  ? ParseSemver<V> extends { pre: infer P extends PreId[] }
+  ? P extends []
+  ? OptKeep<O> extends true
+  ? PrepatchKeepBuild<V, OptPreid<O>, OptBase<O>>
+  : Prepatch<V, OptPreid<O>, OptBase<O>>
+  : OptKeep<O> extends true
+  ? NextPreKeepBuild<V, OptPreid<O>, OptBase<O>>
+  : NextPreSafe<V, OptPreid<O>, OptBase<O>>
+  : never
+  : never;
 
 export type Inc<
   V extends string,
   Kind extends
-    | "patch"
-    | "minor"
-    | "major"
-    | "prepatch"
-    | "preminor"
-    | "premajor"
-    | "prerelease"
-    | "release",
-  Opts extends { preid?: string; keepBuild?: boolean } = {},
+  | "patch"
+  | "minor"
+  | "major"
+  | "prepatch"
+  | "preminor"
+  | "premajor"
+  | "prerelease"
+  | "release",
+  Opts extends { preid?: string; keepBuild?: boolean; identifierBase?: 0 | 1 | false } = {},
 > = Kind extends "patch"
   ? OptKeep<Opts> extends true
-    ? NextPatchKeepBuild<V>
-    : NextPatch<V>
+  ? NextPatchKeepBuild<V>
+  : NextPatch<V>
   : Kind extends "minor"
-    ? OptKeep<Opts> extends true
-      ? NextMinorKeepBuild<V>
-      : NextMinor<V>
-    : Kind extends "major"
-      ? OptKeep<Opts> extends true
-        ? NextMajorKeepBuild<V>
-        : NextMajor<V>
-      : Kind extends "prepatch"
-        ? IncPrepatch<V, Opts>
-        : Kind extends "preminor"
-          ? IncPreminor<V, Opts>
-          : Kind extends "premajor"
-            ? IncPremajor<V, Opts>
-            : Kind extends "prerelease"
-              ? IncPrerelease<V, Opts>
-              : Kind extends "release"
-                ? Release<V, OptKeep<Opts>>
-                : never;
+  ? OptKeep<Opts> extends true
+  ? NextMinorKeepBuild<V>
+  : NextMinor<V>
+  : Kind extends "major"
+  ? OptKeep<Opts> extends true
+  ? NextMajorKeepBuild<V>
+  : NextMajor<V>
+  : Kind extends "prepatch"
+  ? IncPrepatch<V, Opts>
+  : Kind extends "preminor"
+  ? IncPreminor<V, Opts>
+  : Kind extends "premajor"
+  ? IncPremajor<V, Opts>
+  : Kind extends "prerelease"
+  ? IncPrerelease<V, Opts>
+  : Kind extends "release"
+  ? Release<V, OptKeep<Opts>>
+  : never;

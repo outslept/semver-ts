@@ -3,6 +3,8 @@ import type { NormalizeRange, NormRange, NormSet, NormCmp } from "./expand";
 import type { ParseSemver, PreId } from "../parser";
 import type { CmpSemver } from "../comparator";
 import type { And } from "../utils/bool";
+import type { PreIdsToStr } from "../increment/pre-internals.js";
+import type { IncNumStr } from "../increment/num.js";
 
 type OptInclude<O> = O extends { includePrerelease: infer B extends boolean } ? B : false;
 
@@ -275,3 +277,126 @@ export type Subset<R1 extends string, R2 extends string> =
         : never
       : never
     : never;
+
+type NextVersionType<V extends string> =
+  ParseSemver<V> extends {
+    major: infer A extends string;
+    minor: infer B extends string;
+    patch: infer C extends string;
+    pre: infer P extends PreId[];
+  }
+    ? P extends []
+      ? `${A}.${B}.${IncNumStr<C>}`
+      : `${A}.${B}.${C}-${PreIdsToStr<[...P, { kind: "num"; v: "0" }]>}`
+    : never;
+
+type FindMinForSet<S extends NormSet> =
+  FoldBounds<S> extends infer B
+    ? B extends { lb: LB; ub: UB | UBNone; eq: infer E }
+      ? E extends string
+        ? E
+        : B extends { lb: infer L extends LB }
+          ? L["strict"] extends true
+            ? NextVersionType<L["v"]>
+            : L["v"]
+          : never
+      : never
+    : never;
+
+type MinOfSets<R extends NormRange, Best extends string | null = null> = R extends [
+  infer H extends NormSet,
+  ...infer T extends NormSet[],
+]
+  ? FindMinForSet<H> extends infer Min extends string
+    ? Satisfies<Min, R & any> extends true
+      ? Best extends string
+        ? CmpSemver<Min, Best> extends -1
+          ? MinOfSets<T, Min>
+          : MinOfSets<T, Best>
+        : MinOfSets<T, Min>
+      : MinOfSets<T, Best>
+    : MinOfSets<T, Best>
+  : Best extends string
+    ? Best
+    : never;
+
+export type FindMinimumForRange<R extends string, O extends { includePrerelease?: boolean } = {}> =
+  ParseRange<R> extends infer AST
+    ? NormalizeRange<AST & any> extends infer NR extends NormRange
+      ? MinOfSets<NR>
+      : never
+    : never;
+
+type IsOutsideSet<V extends string, S extends NormSet, D extends "<" | ">"> =
+  FoldBounds<S> extends infer B
+    ? B extends { lb: LB; ub: UB | UBNone; eq: infer E }
+      ? E extends string
+        ? D extends ">"
+          ? CmpSemver<V, E> extends 1
+            ? true
+            : false
+          : CmpSemver<V, E> extends -1
+            ? true
+            : false
+        : B extends { ub: infer U extends UB | UBNone }
+          ? [U] extends [UBNone]
+            ? false
+            : U extends UB
+              ? D extends ">"
+                ? U["strict"] extends true
+                  ? CmpSemver<V, U["v"]> extends -1
+                    ? false
+                    : true
+                  : CmpSemver<V, U["v"]> extends 1
+                    ? true
+                    : false
+                : false
+              : never
+          : B extends { lb: infer L extends LB }
+            ? D extends "<"
+              ? L["strict"] extends true
+                ? CmpSemver<V, L["v"]> extends 1
+                  ? false
+                  : true
+                : CmpSemver<V, L["v"]> extends -1
+                  ? true
+                  : false
+              : false
+            : never
+      : never
+    : never;
+
+type IsOutsideAny<V extends string, R extends NormRange, D extends "<" | ">"> = R extends [
+  infer H extends NormSet,
+  ...infer T extends NormSet[],
+]
+  ? IsOutsideSet<V, H, D> extends true
+    ? true
+    : IsOutsideAny<V, T, D>
+  : true;
+
+export type IsOutsideRange<
+  V extends string,
+  R extends string,
+  D extends "<" | ">",
+  O extends { includePrerelease?: boolean } = {},
+> =
+  Satisfies<V, R, O> extends true
+    ? false
+    : ParseRange<R> extends infer AST
+      ? NormalizeRange<AST & any> extends infer NR extends NormRange
+        ? IsOutsideAny<V, NR, D>
+        : never
+      : never;
+
+export type IsGreaterThanRange<
+  V extends string,
+  R extends string,
+  O extends { includePrerelease?: boolean } = {},
+> = IsOutsideRange<V, R, ">", O>;
+
+export type IsLessThanRange<
+  V extends string,
+  R extends string,
+  O extends { includePrerelease?: boolean } = {},
+> = IsOutsideRange<V, R, "<", O>;

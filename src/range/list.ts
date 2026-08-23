@@ -1,11 +1,11 @@
-import type { CmpSemver, EqSemver, Lte, Gt } from "../comparator";
+import type { CmpBuild, CmpSemver, EqSemver, Lte, Gt } from "../comparator";
 import type { Satisfies } from "./eval";
 
 type InsertAsc<V extends string, L extends string[]> = L extends [
   infer H extends string,
   ...infer T extends string[],
 ]
-  ? Lte<V, H> extends true
+  ? CmpBuild<V, H> extends -1
     ? [V, H, ...T]
     : [H, ...InsertAsc<V, T>]
   : [V];
@@ -21,7 +21,7 @@ type InsertDesc<V extends string, L extends string[]> = L extends [
   infer H extends string,
   ...infer T extends string[],
 ]
-  ? Gt<V, H> extends true
+  ? CmpBuild<V, H> extends 1
     ? [V, H, ...T]
     : [H, ...InsertDesc<V, T>]
   : [V];
@@ -103,3 +103,18 @@ export type MinSatisfying<
   R extends string,
   O extends { includePrerelease?: boolean } = {},
 > = MinOf<FilterSatisfying<Vs, R, O>>;
+
+export type SimplifyRange<
+  Vs extends string[],
+  R extends string,
+  O extends { includePrerelease?: boolean } = {},
+> =
+  Sort<FilterSatisfying<Vs, R, O>> extends infer Sorted extends string[]
+    ? Sorted extends []
+      ? ""
+      : Sorted extends [infer Only extends string]
+        ? Only
+        : Sorted extends [infer First extends string, ...any[], infer Last extends string]
+          ? `${First} - ${Last}`
+          : never
+    : never;

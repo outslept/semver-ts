@@ -4,19 +4,21 @@ import type { BuildToStr } from "./build";
 import type { NextPreTokens, PreIdsToStr } from "./pre-internals";
 import type { IncNumStr } from "./num";
 
-export type NextPre<V extends string, Tag extends string> =
+type BaseSuffix<B extends 0 | 1 | false> = B extends 1 ? ".1" : B extends 0 ? ".0" : "";
+
+export type NextPre<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   ParseSemver<V> extends {
     major: infer A extends string;
     minor: infer B extends string;
     patch: infer C extends string;
     pre: infer P extends PreId[];
   }
-    ? NextPreTokens<P, Tag> extends infer OUT extends PreId[]
+    ? NextPreTokens<P, Tag, Base> extends infer OUT extends PreId[]
       ? `${A}.${B}.${C}-${PreIdsToStr<OUT>}`
       : never
     : never;
 
-export type NextPreSafe<V extends string, Tag extends string> =
+export type NextPreSafe<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends {
         major: infer A extends string;
@@ -24,13 +26,13 @@ export type NextPreSafe<V extends string, Tag extends string> =
         patch: infer C extends string;
         pre: infer P extends PreId[];
       }
-      ? NextPreTokens<P, Tag> extends infer OUT extends PreId[]
+      ? NextPreTokens<P, Tag, Base> extends infer OUT extends PreId[]
         ? `${A}.${B}.${C}-${PreIdsToStr<OUT>}`
         : never
       : never
     : never;
 
-export type NextPreKeepBuild<V extends string, Tag extends string> =
+export type NextPreKeepBuild<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends {
         major: infer A extends string;
@@ -39,7 +41,7 @@ export type NextPreKeepBuild<V extends string, Tag extends string> =
         pre: infer P extends PreId[];
         build: infer BD extends string[];
       }
-      ? NextPreTokens<P, Tag> extends infer OUT extends PreId[]
+      ? NextPreTokens<P, Tag, Base> extends infer OUT extends PreId[]
         ? BD extends []
           ? `${A}.${B}.${C}-${PreIdsToStr<OUT>}`
           : `${A}.${B}.${C}-${PreIdsToStr<OUT>}+${BuildToStr<BD>}`
@@ -47,7 +49,7 @@ export type NextPreKeepBuild<V extends string, Tag extends string> =
       : never
     : never;
 
-export type Prepatch<V extends string, Tag extends string> =
+export type Prepatch<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends {
         major: infer A extends string;
@@ -56,26 +58,30 @@ export type Prepatch<V extends string, Tag extends string> =
         pre: infer P extends PreId[];
       }
       ? P extends []
-        ? `${A}.${B}.${IncNumStr<C>}-${Tag}.1`
-        : NextPreSafe<V, Tag>
+        ? `${A}.${B}.${IncNumStr<C>}-${Tag}${BaseSuffix<Base>}`
+        : NextPreSafe<V, Tag, Base>
       : never
     : never;
 
-export type Preminor<V extends string, Tag extends string> =
+export type Preminor<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends { major: infer A extends string; minor: infer B extends string }
-      ? `${A}.${IncNumStr<B>}.0-${Tag}.1`
+      ? `${A}.${IncNumStr<B>}.0-${Tag}${BaseSuffix<Base>}`
       : never
     : never;
 
-export type Premajor<V extends string, Tag extends string> =
+export type Premajor<V extends string, Tag extends string, Base extends 0 | 1 | false = 1> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends { major: infer A extends string }
-      ? `${IncNumStr<A>}.0.0-${Tag}.1`
+      ? `${IncNumStr<A>}.0.0-${Tag}${BaseSuffix<Base>}`
       : never
     : never;
 
-export type PrepatchKeepBuild<V extends string, Tag extends string> =
+export type PrepatchKeepBuild<
+  V extends string,
+  Tag extends string,
+  Base extends 0 | 1 | false = 1,
+> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends {
         major: infer A extends string;
@@ -86,13 +92,17 @@ export type PrepatchKeepBuild<V extends string, Tag extends string> =
       }
       ? P extends []
         ? BD extends []
-          ? `${A}.${B}.${IncNumStr<C>}-${Tag}.1`
-          : `${A}.${B}.${IncNumStr<C>}-${Tag}.1+${BuildToStr<BD>}`
-        : NextPreKeepBuild<V, Tag>
+          ? `${A}.${B}.${IncNumStr<C>}-${Tag}${BaseSuffix<Base>}`
+          : `${A}.${B}.${IncNumStr<C>}-${Tag}${BaseSuffix<Base>}+${BuildToStr<BD>}`
+        : NextPreKeepBuild<V, Tag, Base>
       : never
     : never;
 
-export type PreminorKeepBuild<V extends string, Tag extends string> =
+export type PreminorKeepBuild<
+  V extends string,
+  Tag extends string,
+  Base extends 0 | 1 | false = 1,
+> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends {
         major: infer A extends string;
@@ -100,16 +110,20 @@ export type PreminorKeepBuild<V extends string, Tag extends string> =
         build: infer BD extends string[];
       }
       ? BD extends []
-        ? `${A}.${IncNumStr<B>}.0-${Tag}.1`
-        : `${A}.${IncNumStr<B>}.0-${Tag}.1+${BuildToStr<BD>}`
+        ? `${A}.${IncNumStr<B>}.0-${Tag}${BaseSuffix<Base>}`
+        : `${A}.${IncNumStr<B>}.0-${Tag}${BaseSuffix<Base>}+${BuildToStr<BD>}`
       : never
     : never;
 
-export type PremajorKeepBuild<V extends string, Tag extends string> =
+export type PremajorKeepBuild<
+  V extends string,
+  Tag extends string,
+  Base extends 0 | 1 | false = 1,
+> =
   IsAlphaNumDashToken<Tag> extends true
     ? ParseSemver<V> extends { major: infer A extends string; build: infer BD extends string[] }
       ? BD extends []
-        ? `${IncNumStr<A>}.0.0-${Tag}.1`
-        : `${IncNumStr<A>}.0.0-${Tag}.1+${BuildToStr<BD>}`
+        ? `${IncNumStr<A>}.0.0-${Tag}${BaseSuffix<Base>}`
+        : `${IncNumStr<A>}.0.0-${Tag}${BaseSuffix<Base>}+${BuildToStr<BD>}`
       : never
     : never;
