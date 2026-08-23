@@ -1,2 +1,2 @@
-export * from './semver-debug'
-export * from './range-debug'
+export * from "./semver-debug";
+export * from "./range-debug";

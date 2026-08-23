@@ -1,2 +1,1 @@
-export type IsNonEmpty<S extends string> =
-  S extends '' ? false : true
+export type IsNonEmpty<S extends string> = S extends "" ? false : true;

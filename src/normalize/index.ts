@@ -1,3 +1,3 @@
-export * from './strip-v'
-export * from './coerce'
-export * from './format'
+export * from "./strip-v";
+export * from "./coerce";
+export * from "./format";

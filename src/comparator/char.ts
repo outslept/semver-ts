@@ -1,5 +1,5 @@
-import type { CharRank } from '../char'
-import type { CmpRank } from './rank'
+import type { CharRank } from "../char";
+import type { CmpRank } from "./rank";
 
 export type CmpChar<A extends string, B extends string> =
   CharRank<A> extends infer RA
@@ -10,4 +10,4 @@ export type CmpChar<A extends string, B extends string> =
           : never
         : never
       : never
-    : never
+    : never;

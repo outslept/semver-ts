@@ -1,3 +1,4 @@
-import type { IsValidSemver } from './semver'
+import type { IsValidSemver } from "./semver";
 
-export type Semver<S extends string> = IsValidSemver<S> extends true ? S & { __semver: true } : never
+export type Semver<S extends string> =
+  IsValidSemver<S> extends true ? S & { __semver: true } : never;
