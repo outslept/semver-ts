@@ -1,30 +1,51 @@
-import type { IsNumericId, IsAlphaNumDashToken, SplitDotsNonEmpty } from "../string";
-import type { IsDigits } from "../string/digits.js";
+import type {
+  IsNumericId,
+  IsNumericIdLoose,
+  IsAlphaNumDashToken,
+  IsDigits,
+  SplitDotsNonEmpty,
+} from "../string";
 import type { PreId, PreNum, PreStr } from "./types";
+import type { ParserMode } from "./mode";
 
-export type TokenizePreId<S extends string> =
+type CheckNumericPre<S extends string, M extends ParserMode> =
   IsDigits<S> extends true
-    ? IsNumericId<S> extends true
-      ? PreNum<S>
-      : never
+    ? M extends "loose"
+      ? IsNumericIdLoose<S> extends true
+        ? PreNum<S>
+        : never
+      : IsNumericId<S> extends true
+        ? PreNum<S>
+        : never
+    : never;
+
+export type TokenizePreId<S extends string, M extends ParserMode = "strict"> =
+  IsDigits<S> extends true
+    ? CheckNumericPre<S, M>
     : IsAlphaNumDashToken<S> extends true
       ? PreStr<S>
       : never;
 
-export type MapPreTokens<Ts extends string[], Acc extends PreId[] = []> = Ts extends [
-  infer H extends string,
-  ...infer R extends string[],
-]
-  ? TokenizePreId<H> extends infer X
+export type MapPreTokens<
+  Ts extends string[],
+  M extends ParserMode,
+  Acc extends PreId[] = [],
+> = Ts extends [infer H extends string, ...infer R extends string[]]
+  ? TokenizePreId<H, M> extends infer X
     ? [X] extends [never]
       ? never
       : X extends PreId
-        ? MapPreTokens<R, [...Acc, X]>
+        ? MapPreTokens<R, M, [...Acc, X]>
         : never
     : never
   : Acc;
 
-export type ParsePre<S extends string> =
-  SplitDotsNonEmpty<S> extends infer Ts ? (Ts extends string[] ? MapPreTokens<Ts> : never) : never;
+export type ParsePre<S extends string, M extends ParserMode = "strict"> =
+  SplitDotsNonEmpty<S> extends infer Ts
+    ? Ts extends string[]
+      ? MapPreTokens<Ts, M>
+      : never
+    : never;
 
-export type IsValidPre<S extends string> = ParsePre<S> extends never ? false : true;
+export type IsValidPre<S extends string, M extends ParserMode = "strict"> =
+  ParsePre<S, M> extends never ? false : true;

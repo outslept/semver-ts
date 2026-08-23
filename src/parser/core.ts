@@ -1,24 +1,30 @@
-import type { IsNumericId } from "../string";
+import type { IsNumericId, IsNumericIdLoose } from '../string'
+import type { ParserMode } from './mode'
 
-export type ParseCore<S extends string> = S extends `${infer A}.${infer R1}`
-  ? R1 extends `${infer B}.${infer C}`
-    ? IsNumericId<A> extends true
-      ? IsNumericId<B> extends true
-        ? IsNumericId<C> extends true
-          ? { major: A; minor: B; patch: C }
-          : never
-        : never
-      : never
-    : never
-  : never;
+type CheckNumeric<S extends string, M extends ParserMode> =
+  M extends 'loose' ? IsNumericIdLoose<S> extends true : IsNumericId<S> extends true;
 
-export type IsValidCore<S extends string> = ParseCore<S> extends never ? false : true;
+export type ParseCore<S extends string, M extends ParserMode = 'strict'> =
+  S extends `${infer A}.${infer R1} `
+  ? R1 extends `${infer B}.${infer C} `
+  ? CheckNumeric<A, M> extends true
+  ? CheckNumeric<B, M> extends true
+  ? CheckNumeric<C, M> extends true
+  ? { major: A; minor: B; patch: C }
+  : never
+  : never
+  : never
+  : never
+  : never
 
-export type MajorOf<S extends string> =
-  ParseCore<S> extends { major: infer M extends string } ? M : never;
+export type IsValidCore<S extends string, M extends ParserMode = 'strict'> =
+  ParseCore<S, M> extends never ? false : true
 
-export type MinorOf<S extends string> =
-  ParseCore<S> extends { minor: infer M extends string } ? M : never;
+export type MajorOf<S extends string, M extends ParserMode = 'strict'> =
+  ParseCore<S, M> extends { major: infer X extends string } ? X : never
 
-export type PatchOf<S extends string> =
-  ParseCore<S> extends { patch: infer P extends string } ? P : never;
+export type MinorOf<S extends string, M extends ParserMode = 'strict'> =
+  ParseCore<S, M> extends { minor: infer X extends string } ? X : never
+
+export type PatchOf<S extends string, M extends ParserMode = 'strict'> =
+  ParseCore<S, M> extends { patch: infer X extends string } ? X : never
