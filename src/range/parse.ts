@@ -11,8 +11,8 @@ type FilterEmpty<Ts extends string[], Acc extends string[] = []> = Ts extends [
   ...infer T extends string[],
 ]
   ? H extends ""
-  ? FilterEmpty<T, Acc>
-  : FilterEmpty<T, [...Acc, H]>
+    ? FilterEmpty<T, Acc>
+    : FilterEmpty<T, [...Acc, H]>
   : Acc;
 
 type MapComparators<Ts extends string[], Acc extends RangeNode[] = []> = Ts extends [
@@ -20,42 +20,42 @@ type MapComparators<Ts extends string[], Acc extends RangeNode[] = []> = Ts exte
   ...infer T extends string[],
 ]
   ? ParseComparator<H> extends infer N
-  ? [N] extends [never]
-  ? never
-  : MapComparators<T, [...Acc, N & RangeNode]>
-  : never
+    ? [N] extends [never]
+      ? never
+      : MapComparators<T, [...Acc, N & RangeNode]>
+    : never
   : Acc;
 
 type ParseTerm<S extends string> = S extends `${infer L} - ${infer R}`
   ? ParsePartialSemver<Trim<L>> extends infer PL extends PartialSemver
-  ? ParsePartialSemver<Trim<R>> extends infer PR extends PartialSemver
-  ? [{ t: "and"; nodes: [{ t: "hy"; left: PL; right: PR }] }]
-  : never
-  : never
+    ? ParsePartialSemver<Trim<R>> extends infer PR extends PartialSemver
+      ? [{ t: "and"; nodes: [{ t: "hy"; left: PL; right: PR }] }]
+      : never
+    : never
   : FilterEmpty<SplitBy<Trim<S>, " ">> extends infer Ts extends string[]
-  ? MapComparators<Ts> extends infer Ns extends RangeNode[]
-  ? [{ t: "and"; nodes: Ns }]
-  : never
-  : never;
+    ? MapComparators<Ts> extends infer Ns extends RangeNode[]
+      ? [{ t: "and"; nodes: Ns }]
+      : never
+    : never;
 
 type MapTerms<Ts extends string[], Acc extends ComparatorSet[] = []> = Ts extends [
   infer H extends string,
   ...infer T extends string[],
 ]
   ? ParseTerm<H> extends infer P
-  ? P extends ComparatorSet[]
-  ? MapTerms<T, [...Acc, ...P]>
-  : MapTerms<T, Acc>
-  : never
+    ? P extends ComparatorSet[]
+      ? MapTerms<T, [...Acc, ...P]>
+      : MapTerms<T, Acc>
+    : never
   : Acc;
 
 export type ParseRange<R extends string> =
   Trim<R> extends ""
-  ? ParseRange<"*">
-  : SplitBy<R, "||"> extends infer Parts
-  ? Parts extends string[]
-  ? MapTerms<
-    { [K in keyof Parts]: Parts[K] extends string ? Trim<Parts[K]> : never } & string[]
-  >
-  : never
-  : never;
+    ? ParseRange<"*">
+    : SplitBy<R, "||"> extends infer Parts
+      ? Parts extends string[]
+        ? MapTerms<
+            { [K in keyof Parts]: Parts[K] extends string ? Trim<Parts[K]> : never } & string[]
+          >
+        : never
+      : never;
