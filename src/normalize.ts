@@ -1,7 +1,38 @@
-import type { IsValidSemver } from "../parser";
-import type { IsDigits, IsNonEmpty } from "../string";
-import type { NormalizeSemver } from "./format";
-import type { StripVPrefix } from "./strip-v";
+import type { IsValidSemver, ParseSemver, PreId } from "./parser.js";
+import type { IsDigits, IsNonEmpty } from "./string.js";
+import type { JoinBy } from "./utils.js";
+
+export type StripVPrefix<S extends string> = S extends `v${infer R}`
+  ? R
+  : S extends `V${infer R2}`
+    ? R2
+    : S;
+
+type PreIdsToStr<Ps extends PreId[]> = Ps extends [
+  infer H extends PreId,
+  ...infer T extends PreId[],
+]
+  ? T extends []
+    ? `${H["v"]}`
+    : `${H["v"]}.${PreIdsToStr<T>}`
+  : "";
+
+export type NormalizeSemver<S extends string> =
+  ParseSemver<S> extends {
+    major: infer A extends string;
+    minor: infer B extends string;
+    patch: infer C extends string;
+    pre: infer P extends PreId[];
+    build: infer BD extends string[];
+  }
+    ? P extends []
+      ? BD extends []
+        ? `${A}.${B}.${C}`
+        : `${A}.${B}.${C}+${JoinBy<BD, ".">}`
+      : BD extends []
+        ? `${A}.${B}.${C}-${PreIdsToStr<P>}`
+        : `${A}.${B}.${C}-${PreIdsToStr<P>}+${JoinBy<BD, ".">}`
+    : never;
 
 type IsDigitsNonEmpty<S extends string> =
   IsNonEmpty<S> extends true ? (IsDigits<S> extends true ? true : false) : false;

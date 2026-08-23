@@ -1,4 +1,4 @@
-import type { PreId } from "../parser";
+import type { PreId } from "../parser.js";
 
 export type Wild = "x" | "X" | "*";
 

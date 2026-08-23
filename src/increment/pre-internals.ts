@@ -1,6 +1,6 @@
-import type { PreId } from "../parser";
-import type { Eq } from "../utils/eq";
-import type { IncNumStr } from "./num";
+import type { PreId } from "../parser.js";
+import type { Eq } from "../utils.js";
+import type { IncNumStr } from "./num.js";
 
 export type PopLast<A extends any[]> = A extends [...infer I, infer L] ? [I, L] : [[], never];
 

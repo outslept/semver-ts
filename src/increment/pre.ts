@@ -1,8 +1,8 @@
-import type { ParseSemver, PreId } from "../parser";
-import type { IsAlphaNumDashToken } from "../string";
-import type { BuildToStr } from "./build";
-import type { NextPreTokens, PreIdsToStr } from "./pre-internals";
-import type { IncNumStr } from "./num";
+import type { ParseSemver, PreId } from "../parser.js";
+import type { IsAlphaNumDashToken } from "../string.js";
+import type { BuildToStr } from "./build.js";
+import type { IncNumStr } from "./num.js";
+import type { NextPreTokens, PreIdsToStr } from "./pre-internals.js";
 
 type BaseSuffix<B extends 0 | 1 | false> = B extends 1 ? ".1" : B extends 0 ? ".0" : "";
 

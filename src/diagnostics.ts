@@ -1,7 +1,5 @@
-import type { PreId } from "../parser";
-import type { ParseCore } from "../parser/core";
-import type { ParsePre } from "../parser/pre";
-import type { ParseBuild } from "../parser/build";
+import type { ParseBuild, ParseCore, ParsePre, PreId } from "./parser.js";
+import type { ParseRange } from "./range/parse.js";
 
 export type SemverDebugReason = "INVALID_CORE" | "INVALID_PRE" | "INVALID_BUILD";
 
@@ -19,7 +17,16 @@ export type ParseSemverDebug<S extends string> = S extends `${infer Left}+${infe
               ? PR extends PreId[]
                 ? ParseBuild<Build> extends infer BD
                   ? BD extends string[]
-                    ? { ok: true; value: { major: A; minor: B; patch: P; pre: PR; build: BD } }
+                    ? {
+                        ok: true;
+                        value: {
+                          major: A;
+                          minor: B;
+                          patch: P;
+                          pre: PR;
+                          build: BD;
+                        };
+                      }
                     : { ok: false; reason: "INVALID_BUILD" }
                   : never
                 : { ok: false; reason: "INVALID_PRE" }
@@ -34,7 +41,16 @@ export type ParseSemverDebug<S extends string> = S extends `${infer Left}+${infe
             }
             ? ParseBuild<Build> extends infer BD2
               ? BD2 extends string[]
-                ? { ok: true; value: { major: A2; minor: B2; patch: P2; pre: []; build: BD2 } }
+                ? {
+                    ok: true;
+                    value: {
+                      major: A2;
+                      minor: B2;
+                      patch: P2;
+                      pre: [];
+                      build: BD2;
+                    };
+                  }
                 : { ok: false; reason: "INVALID_BUILD" }
               : never
             : { ok: false; reason: "INVALID_CORE" }
@@ -50,7 +66,16 @@ export type ParseSemverDebug<S extends string> = S extends `${infer Left}+${infe
         }
         ? ParsePre<Pre2> extends infer PR3
           ? PR3 extends PreId[]
-            ? { ok: true; value: { major: A3; minor: B3; patch: P3; pre: PR3; build: [] } }
+            ? {
+                ok: true;
+                value: {
+                  major: A3;
+                  minor: B3;
+                  patch: P3;
+                  pre: PR3;
+                  build: [];
+                };
+              }
             : { ok: false; reason: "INVALID_PRE" }
           : never
         : { ok: false; reason: "INVALID_CORE" }
@@ -61,6 +86,24 @@ export type ParseSemverDebug<S extends string> = S extends `${infer Left}+${infe
           minor: infer B4 extends string;
           patch: infer P4 extends string;
         }
-        ? { ok: true; value: { major: A4; minor: B4; patch: P4; pre: []; build: [] } }
+        ? {
+            ok: true;
+            value: {
+              major: A4;
+              minor: B4;
+              patch: P4;
+              pre: [];
+              build: [];
+            };
+          }
         : { ok: false; reason: "INVALID_CORE" }
       : never;
+
+export type RangeDebugReason = "INVALID_RANGE";
+
+export type ParseRangeDebug<R extends string> =
+  ParseRange<R> extends infer AST
+    ? [AST] extends [never]
+      ? { ok: false; reason: "INVALID_RANGE" }
+      : { ok: true; value: AST }
+    : never;

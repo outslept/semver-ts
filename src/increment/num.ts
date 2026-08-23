@@ -1,5 +1,5 @@
-import type { Digit } from "../char";
-import type { SuccDigit } from "./digit";
+import type { Digit } from "../char.js";
+import type { SuccDigit } from "./digit.js";
 
 export type IncNumStrCarry<S extends string> = S extends ""
   ? "1"

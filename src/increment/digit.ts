@@ -1,4 +1,4 @@
-import type { Digit } from "../char";
+import type { Digit } from "../char.js";
 
 export type SuccDigit<D extends Digit> = D extends "0"
   ? "1"

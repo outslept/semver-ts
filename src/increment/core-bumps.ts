@@ -1,6 +1,6 @@
-import type { ParseSemver } from "../parser";
-import type { BuildToStr } from "./build";
-import type { IncNumStr } from "./num";
+import type { IncNumStr } from "../diff.js";
+import type { ParseSemver } from "../parser.js";
+import type { BuildToStr } from "./build.js";
 
 export type NextPatch<V extends string> =
   ParseSemver<V> extends {
